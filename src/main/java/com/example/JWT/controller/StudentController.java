@@ -1,38 +1,39 @@
 package com.example.JWT.controller;
 
-import com.example.JWT.entity.Student;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.web.bind.annotation.GetMapping;
+import com.example.JWT.config.AuthRequest;
+import com.example.JWT.config.AuthResponse;
+import com.example.JWT.util.JwtUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 public class StudentController {
 
-    private List<Student> students = new ArrayList<>(List.of(
-            new Student("Alice", 85),
-            new Student("Bob", 90),
-            new Student("Charlie", 78)
-    ));
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private JwtUtil jwtUtil;
+    @Autowired
+    private UserDetailsService userDetailsService;
 
-    @GetMapping("/students")
-    public List<Student> getAllStudents() {
-        return students;
-    }
+    @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+        );
 
-    @GetMapping("/token")
-    public CsrfToken getCsrfToken(HttpServletRequest request) {
-        return (CsrfToken) request.getAttribute("_csrf");
-    }
+        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
+        String jwtToken = jwtUtil.generateToken(userDetails);
 
-    @PostMapping("/students")
-    public Student addStudent(@RequestBody Student student) {
-        students.add(student);
-        return student;
+        System.out.println("Generated JWT Token: " + jwtToken);
+        return ResponseEntity.ok(new AuthResponse(jwtToken));
     }
 }
