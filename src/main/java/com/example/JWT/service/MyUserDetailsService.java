@@ -32,7 +32,7 @@ public class MyUserDetailsService implements UserDetailsService {
         Student student = new Student();
         student.setUsername(request.getUsername());
         student.setPassword(passwordEncoder.encode(request.getPassword()));
-        student.setRole("STUDENT"); // Default role, can be changed as needed
+        student.setRole("STUDENT");
 
         studentRepository.save(student);
     }
@@ -42,6 +42,6 @@ public class MyUserDetailsService implements UserDetailsService {
         Student student = studentRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 
-        return new User(student.getUsername(), student.getPassword(), List.of(new SimpleGrantedAuthority("ROLE_"+ student.getRole())));
+        return new User(student.getUsername(), student.getPassword(), List.of(new SimpleGrantedAuthority("ROLE_" + student.getRole())));
     }
 }
