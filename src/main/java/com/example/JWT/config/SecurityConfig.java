@@ -1,9 +1,12 @@
 package com.example.JWT.config;
 
+import com.example.JWT.service.MyUserDetailsService;
+import com.example.JWT.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -26,16 +29,21 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    public UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
 
-    @Autowired
-    private JwtAuthFilter jwtAuthFilter;
-
-    public SecurityConfig(UserDetailsService userDetailsService, JwtAuthFilter jwtAuthFilter) {
+    public SecurityConfig(@Lazy UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
-        this.jwtAuthFilter = jwtAuthFilter;
     }
+
+    @Bean
+    public JwtAuthFilter jwtAuthFilter(JwtUtil jwtUtil, @Lazy UserDetailsService userDetailsService) {
+        return new JwtAuthFilter(jwtUtil, userDetailsService);
+    }
+
+//    @Bean
+//    public UserDetailsService userDetailsService(){
+//        return new MyUserDetailsService();
+//    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception{
@@ -76,12 +84,13 @@ public class SecurityConfig {
 //    }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
         return http
-                .csrf(Customizer -> Customizer.disable())
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/auth/**").permitAll()
-                        .anyRequest().authenticated())
+                        .anyRequest().hasRole("USER"))
                 .sessionManagement(session -> session.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
@@ -97,8 +106,8 @@ public class SecurityConfig {
     public AuthenticationProvider authenticationProvider(){
 
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setPasswordEncoder(NoOpPasswordEncoder.getInstance());
         authenticationProvider.setUserDetailsService(userDetailsService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
     }
 }

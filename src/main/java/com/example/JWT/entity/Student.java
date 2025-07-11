@@ -28,7 +28,12 @@ public class Student {
 
     private String role;
 
-    public <E> Student(String username, String password, List<E> es) {
+    public Student() {
+    }
+
+    public Student(String username, String password) {
+        this.username = username;
+        this.password = password;
     }
 
     public Long getStudentId() {
