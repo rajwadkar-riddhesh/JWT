@@ -1,8 +1,7 @@
 package com.example.JWT.entity;
 
+import com.example.JWT.enums.Role;
 import jakarta.persistence.*;
-
-import java.util.List;
 
 @Entity
 @Table(name = "student")
@@ -26,14 +25,21 @@ public class Student {
     @Column(nullable = false)
     private String password;
 
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     public Student() {
     }
 
-    public Student(String username, String password) {
+    public Student(Long studentId, String studentFirstName, String studentLastName, String studentEmail, Double studentAverageMarks, String username, String password, Role role) {
+        this.studentId = studentId;
+        this.studentFirstName = studentFirstName;
+        this.studentLastName = studentLastName;
+        this.studentEmail = studentEmail;
+        this.studentAverageMarks = studentAverageMarks;
         this.username = username;
         this.password = password;
+        this.role = role;
     }
 
     public Long getStudentId() {
@@ -92,11 +98,11 @@ public class Student {
         this.password = password;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 }
