@@ -2,6 +2,7 @@ package com.example.JWT.service;
 
 import com.example.JWT.config.AuthRequest;
 import com.example.JWT.entity.Student;
+import com.example.JWT.enums.Role;
 import com.example.JWT.repository.StudentRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -32,7 +33,7 @@ public class MyUserDetailsService implements UserDetailsService {
         Student student = new Student();
         student.setUsername(request.getUsername());
         student.setPassword(passwordEncoder.encode(request.getPassword()));
-        student.setRole("STUDENT");
+        student.setRole(Role.STUDENT);
 
         studentRepository.save(student);
     }
@@ -42,6 +43,6 @@ public class MyUserDetailsService implements UserDetailsService {
         Student student = studentRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 
-        return new User(student.getUsername(), student.getPassword(), List.of(new SimpleGrantedAuthority("ROLE_" + student.getRole())));
+        return new User(student.getUsername(), student.getPassword(), List.of(new SimpleGrantedAuthority("ROLE_" + student.getRole().name())));
     }
 }
