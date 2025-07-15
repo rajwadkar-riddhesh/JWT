@@ -1,7 +1,12 @@
 package com.example.JWT.config;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class AuthRequest {
+
+    @NotBlank(message = "Username must not be blank")
     private String username;
+    @NotBlank(message = "Password must not be blank")
     private String password;
 
     public AuthRequest() {
@@ -26,5 +31,12 @@ public class AuthRequest {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    @Override
+    public String toString() {
+        return "AuthRequest{" +
+                "username='" + username + '\'' +
+                '}';
     }
 }
