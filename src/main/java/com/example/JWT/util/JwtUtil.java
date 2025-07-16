@@ -14,8 +14,8 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private final String SECRET = "95175259998532175486325794612345";
-    private final long EXPIRATION_TIME = 1000 * 60 * 5;
+    private final String SECRET = "784596321563247894568794567859615";
+    private final long EXPIRATION_TIME = 1000 * 60 * 10;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
