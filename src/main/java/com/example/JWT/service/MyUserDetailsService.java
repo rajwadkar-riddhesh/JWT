@@ -25,8 +25,15 @@ public class MyUserDetailsService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void signUpUser(AuthRequest request) {
-        if (studentRepository.findByUsername(request.getUsername()).isPresent()) {
+    public Student signUpUser(AuthRequest request) {
+        if (request.getUsername() == null || request.getUsername().isBlank()) {
+            throw new IllegalArgumentException("Username cannot be empty");
+        }
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
+            throw new IllegalArgumentException("Password cannot be empty");
+        }
+
+        if (studentRepository.existsByUsername(request.getUsername())) {
             throw new IllegalArgumentException("User already exists with username: " + request.getUsername());
         }
 
@@ -35,7 +42,7 @@ public class MyUserDetailsService implements UserDetailsService {
         student.setPassword(passwordEncoder.encode(request.getPassword()));
         student.setRole(Role.STUDENT);
 
-        studentRepository.save(student);
+        return studentRepository.save(student);
     }
 
     @Override
@@ -43,6 +50,10 @@ public class MyUserDetailsService implements UserDetailsService {
         Student student = studentRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 
-        return new User(student.getUsername(), student.getPassword(), List.of(new SimpleGrantedAuthority("ROLE_" + student.getRole().name())));
+        return new User(
+                student.getUsername(),
+                student.getPassword(),
+                List.of(new SimpleGrantedAuthority("ROLE_" + student.getRole().name()))
+        );
     }
 }
